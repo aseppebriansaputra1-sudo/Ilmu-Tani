@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pustaka Tani</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+:root{--bg:#000;--s1:#0d0d0d;--s2:#161616;--ln:#2a2620;--tx:#ece6d8;--mu:#9a9384;--au:#d4b36a;--au2:#8f7a45;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}html{scroll-padding-top:90px}
+body{margin:0;background:var(--bg);color:var(--tx);font:400 16px/1.65 Figtree,system-ui,sans-serif}
+header{padding:56px 20px 28px;max-width:960px;margin:0 auto}
+h1{font:600 clamp(40px,9vw,72px)/1 "Cormorant Garamond",Georgia,serif;margin:0 0 14px;letter-spacing:.01em}
+header p{color:var(--mu);max-width:540px;margin:0}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:rgba(0,0,0,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--ln)}
+.bar>div{max-width:960px;margin:0 auto;padding:12px 20px}
+.tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.tabs button{flex:none;background:none;border:0;color:var(--mu);font:500 15px Figtree,sans-serif;padding:8px 14px;border-bottom:2px solid transparent;cursor:pointer}
+.tabs button.on{color:var(--au);border-color:var(--au)}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+input{flex:1 1 200px;background:var(--s1);border:1px solid var(--ln);border-radius:8px;color:var(--tx);padding:10px 14px;font:inherit}
+input:focus,button:focus-visible,summary:focus-visible{outline:2px solid var(--au);outline-offset:2px}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;width:100%}
+.chips button{flex:none;background:var(--s1);border:1px solid var(--ln);color:var(--mu);border-radius:20px;padding:4px 13px;font:500 13px Figtree,sans-serif;cursor:pointer}
+.chips button.on{border-color:var(--au);color:var(--au)}
+main{max-width:960px;margin:0 auto;padding:20px}
+.intro{border-left:2px solid var(--au2);padding:2px 0 2px 16px;color:var(--mu);margin:0 0 24px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+details{background:var(--s1);border:1px solid var(--ln);border-radius:10px;transition:border-color .2s}
+details[open]{border-color:var(--au2);background:var(--s2);grid-column:1/-1}
+summary{list-style:none;cursor:pointer;padding:16px 18px;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+summary::-webkit-details-marker{display:none}
+summary b{font:600 22px/1.2 "Cormorant Garamond",Georgia,serif;color:var(--tx);display:block}
+summary small{color:var(--mu);font-size:13.5px;display:block;margin-top:4px}
+summary i{font-style:normal;color:var(--au);font-size:12px;border:1px solid var(--au2);border-radius:12px;padding:1px 10px;white-space:nowrap}
+.ic{flex:none;color:var(--au)}.ic svg{width:40px;height:40px;display:block;transition:width .25s,height .25s}details[open] .ic svg{width:68px;height:68px}.tt{flex:1}.hero{display:flex;gap:24px;margin-top:26px;color:var(--au2);flex-wrap:wrap}.hero svg{width:46px;height:46px}
+.d{padding:0 18px 18px;display:grid;gap:12px}
+.d div{border-top:1px solid var(--ln);padding-top:10px}
+.d h4{margin:0 0 2px;font:600 14px Figtree,sans-serif;color:var(--au)}
+.d p{margin:0;color:#cfc8b8;max-width:70ch}
+.none{color:var(--mu);text-align:center;padding:40px 0}
+.warn{margin-top:30px;border:1px solid var(--ln);border-radius:10px;padding:16px 18px;color:var(--mu);font-size:14.5px}
+.warn b{color:var(--au)}
+footer{text-align:center;color:var(--mu);font-size:13px;padding:10px 20px 40px}
+</style>
+</head>
+<body>
+<header>
+<h1>Pustaka Tani</h1>
+<p>Panduan sederhana tentang zat hara tanah dan tanaman, jenis pestisida, penyakit tanaman, serta hama beserta cara menanganinya.</p>
+<div class="hero" id="hero" aria-hidden="true"></div>
+</header>
+<div class="bar"><div>
+<div class="tabs" id="tabs"></div>
+<div class="tools"><input id="q" type="search" placeholder="Cari nama, gejala, atau tanaman" aria-label="Cari"><div class="chips" id="chips"></div></div>
+</div></div>
+<main><p class="intro" id="intro"></p><div class="grid" id="list"></div><div class="warn" id="warn"></div></main>
+<footer>Selalu cocokkan dosis dengan label produk dan saran penyuluh pertanian setempat.</footer>
+<script>
+// Unsur hara: [nama, simbol/kelompok, tipe, fungsi, kurang, lebih, sumber]
+const HARA=[
+["Nitrogen (N)","Makro primer","Makro","Pembentuk klorofil, protein, dan pertumbuhan daun serta batang. Membuat tanaman hijau dan subur.","Daun tua menguning merata, tanaman kerdil, anakan atau cabang sedikit.","Daun terlalu hijau tua dan lembek, mudah roboh dan diserang hama, buah atau bunga tertunda.","Urea, ZA, kompos, pupuk kandang, kacang-kacangan penambat N."],
+["Fosfor (P)","Makro primer","Makro","Membantu pertumbuhan akar, pembungaan, pembuahan, dan pembentukan biji. Penyimpan dan pengantar energi di dalam tanaman.","Daun berwarna keunguan atau kemerahan, akar lemah, bunga dan buah sedikit, tanaman lambat dewasa.","Jarang terlihat langsung, tetapi bisa mengunci seng dan besi sehingga tanaman kekurangan keduanya.","SP-36, TSP, tepung tulang, fosfat alam."],
+["Kalium (K)","Makro primer","Makro","Menguatkan batang, mengatur buka-tutup stomata, memperbesar dan memaniskan buah, serta meningkatkan daya tahan terhadap penyakit dan kekeringan.","Tepi daun tua menguning lalu cokelat seperti terbakar, batang mudah rebah, buah kecil dan kurang manis.","Menghambat serapan kalsium dan magnesium.","KCl, ZK, abu sekam, abu kayu."],
+["Kalsium (Ca)","Makro sekunder","Makro","Menyusun dinding sel agar jaringan kuat, mendukung pertumbuhan ujung akar dan pucuk, serta menetralkan keasaman tanah.","Pucuk dan daun muda cacat, akar pendek, buah busuk ujung (tomat, cabai, semangka).","Tanah terlalu basa sehingga unsur mikro sulit diserap.","Kapur pertanian (kaptan, dolomit), gipsum, cangkang telur halus."],
+["Magnesium (Mg)","Makro sekunder","Makro","Inti dari klorofil. Tanpa magnesium daun tidak bisa menghasilkan makanan dari sinar matahari.","Daun tua menguning di antara tulang daun, tulang daun tetap hijau.","Menghambat serapan kalium dan kalsium.","Dolomit, kieserit, pupuk kandang."],
+["Belerang (S)","Makro sekunder","Makro","Penyusun protein dan asam amino tertentu, pembentuk aroma khas bawang dan kubis, serta membantu pembentukan klorofil.","Daun muda menguning pucat (mirip kurang nitrogen, tetapi mulai dari daun muda).","Tanah menjadi asam.","ZA, gipsum, pupuk belerang."],
+["Besi (Fe)","Mikro","Mikro","Membantu pembentukan klorofil dan pernapasan sel.","Daun muda kuning pucat sementara tulang daun tetap hijau (klorosis), sering di tanah basa.","Daun berbintik cokelat, sering di sawah tergenang (keracunan besi).","Chelate besi, pupuk kandang, memperbaiki pH tanah."],
+["Mangan (Mn)","Mikro","Mikro","Membantu fotosintesis dan kerja enzim.","Bercak kuning di antara tulang daun, daun muda pucat.","Bintik cokelat di daun tua, tanah masam.","Mangan sulfat, pengapuran untuk mengatur pH."],
+["Seng (Zn)","Mikro","Mikro","Pembentuk hormon pertumbuhan dan enzim. Penting untuk jarak antar ruas batang.","Daun kecil, ruas pendek, daun muda menguning atau muncul garis putih (padi, jagung).","Jarang, bisa meracuni akar.","Seng sulfat (ZnSO4), pupuk kandang."],
+["Tembaga (Cu)","Mikro","Mikro","Membantu pembentukan enzim, lignin (kekuatan batang), dan penyerbukan.","Ujung daun layu dan memutih, pertumbuhan terhambat.","Akar rusak dan terhambat.","Tembaga sulfat dalam dosis sangat kecil."],
+["Boron (B)","Mikro","Mikro","Membantu pembentukan bunga, serbuk sari, dan buah, serta pengangkutan gula.","Pucuk mati, buah retak atau berongga (kubis, wortel, kelapa sawit), bunga rontok.","Tepi daun tua terbakar.","Borak, solubor. Dosis sangat tipis."],
+["Molibdenum (Mo)","Mikro","Mikro","Membantu tanaman memakai nitrogen dan bintil akar kacang-kacangan menangkap N dari udara.","Daun kuning mirip kurang N, pada kubis daun menyempit seperti cambuk.","Sangat jarang.","Natrium molibdat, pengapuran tanah masam."],
+["Klor (Cl)","Mikro","Mikro","Mengatur keseimbangan air dalam sel dan membantu fotosintesis.","Sangat jarang; daun layu dan bercak.","Tepi daun terbakar, tanaman sensitif (tembakau, cabai).","Kalium klorida, air hujan."],
+["Bahan organik dan pH","Kesehatan tanah","Tanah","Bahan organik menggemburkan tanah, menahan air dan hara, dan menjadi makanan mikroba. pH tanah menentukan hara mana yang bisa diserap. Umumnya tanaman suka pH 6 sampai 7.","Tanah keras, mudah kering, hara cepat hilang. pH terlalu rendah (masam) mengunci fosfor dan membuat aluminium meracuni akar.","pH terlalu tinggi (basa) mengunci besi, seng, dan mangan.","Kompos, pupuk kandang, jerami, pupuk hijau, biochar. Kapur untuk menaikkan pH, belerang untuk menurunkan."]];
+
+// Sida: [nama, sasaran, tipe, fungsi, contoh, cara, catatan]
+const SIDA=[
+["Fungisida","Jamur","Kimia","Membunuh atau mencegah jamur penyebab penyakit seperti busuk, karat, embun tepung, dan bercak daun.","Mankozeb, klorotalonil, propineb, tembaga hidroksida, azoksistrobin, difenokonazol.","Semprot sebelum atau saat gejala awal. Bersifat protektan (melindungi permukaan) atau sistemik (diserap dan bekerja dari dalam). Bergantian jenis agar jamur tidak kebal.","Semprot pagi atau sore, hindari saat hujan atau terik."],
+["Insektisida","Serangga","Kimia","Membasmi serangga hama seperti ulat, wereng, kutu daun, dan thrips.","Abamektin, emamektin benzoat, imidakloprid, klorantraniliprol, profenofos.","Gunakan setelah populasi hama melewati ambang kerusakan. Bergantian bahan aktif untuk menghindari resistensi.","Cuci tangan, pakai masker, jangan semprot saat bunga mekar agar lebah aman."],
+["Herbisida","Gulma","Kimia","Membunuh gulma (rumput liar). Ada yang membunuh semua tumbuhan (nonselektif) dan ada yang hanya jenis tertentu (selektif).","Glifosat, parakuat, 2,4-D, atrazin, metsulfuron.","Semprot pada gulma yang sedang tumbuh, hindari kena tanaman utama dengan pelindung nozzle.","Angin kencang membuat semprotan melayang ke tanaman lain."],
+["Bakterisida","Bakteri","Kimia","Mengendalikan penyakit akibat bakteri seperti layu bakteri dan hawar daun bakteri.","Tembaga hidroksida, streptomisin sulfat, oksitetrasiklin, kasugamisin.","Efektif di awal serangan sebagai pencegah. Penyakit bakteri sulit disembuhkan kalau sudah parah.","Cabut dan musnahkan tanaman yang sudah layu."],
+["Akarisida","Tungau","Kimia","Membasmi tungau (kutu halus) yang menghisap daun hingga keperakan atau keriting.","Propargit, spiromesifen, fenpiroksimat, abamektin.","Semprot terutama sisi bawah daun tempat tungau bersembunyi.","Insektisida biasa sering tidak mempan pada tungau."],
+["Nematisida","Nematoda","Kimia","Mengendalikan cacing mikroskopis yang membuat puru (bintil) pada akar.","Karbofuran butiran, fluopiram, serta agens hayati Paecilomyces atau Trichoderma.","Ditabur di sekitar akar atau dicampur tanah saat tanam.","Rotasi dengan tanaman bukan inang dan serai wangi atau tagetes membantu."],
+["Moluskisida","Keong dan siput","Kimia","Membasmi keong mas dan siput perusak tanaman muda.","Metaldehida, niklosamida.","Tebar saat awal tanam di petak yang lembap.","Berbahaya bagi ikan jika masuk perairan."],
+["Rodentisida","Tikus","Kimia","Mengendalikan tikus sawah dan tikus rumah.","Brodifakum, bromadiolon (umpan antikoagulan).","Pasang umpan di jalur tikus, jauhkan dari ternak dan anak.","Kombinasikan dengan gropyokan dan perangkap bubu."],
+["Zat Pengatur Tumbuh","Tanaman","Hormon","Bukan pembasmi hama, tetapi mengatur pertumbuhan: merangsang akar, tunas, bunga, buah, atau memperlambat tinggi tanaman.","Auksin (IBA, NAA) untuk akar, sitokinin untuk tunas, giberelin untuk pemanjangan, etefon untuk pemasakan.","Pakai dosis sangat kecil sesuai label.","Kelebihan dosis justru merusak tanaman."],
+["Pestisida Nabati","Beragam","Alami","Dibuat dari bahan tumbuhan yang mengandung zat pengusir atau racun ringan bagi hama. Lebih cepat terurai dan lebih aman bagi lingkungan.","Daun mimba, bawang putih, cabai, sereh, tembakau, tuba, biji mahoni.","Rendam, haluskan, saring, lalu semprot. Cepat hilang, jadi ulangi tiap 3 sampai 5 hari.","Hasilnya lebih lemah daripada kimia, cocok untuk pencegahan dan serangan ringan."],
+["Agens Hayati","Jamur, bakteri, serangga","Hayati","Makhluk hidup yang melawan hama atau penyakit. Termasuk jamur pelawan jamur (Trichoderma), bakteri Bacillus, jamur Beauveria, virus SlNPV, dan predator seperti laba-laba atau kumbang.","Trichoderma, Bacillus subtilis, Beauveria bassiana, Metarhizium, SlNPV, Pseudomonas fluorescens.","Aplikasikan sore hari, jangan dicampur fungisida kimia di hari yang sama.","Bekerja lebih lambat tetapi aman dan menyuburkan tanah."]];
+
+// Penyakit: [nama, tipe, tanaman, ciri, sebab, tangani]
+const SAKIT=[
+["Blas (Busuk Leher)","Jamur","Padi","Bercak berbentuk belah ketupat dengan pusat abu-abu di daun, leher malai menghitam dan patah, bulir hampa.","Jamur Pyricularia oryzae, berkembang saat lembap, banyak nitrogen, dan malam sejuk.","Tanam varietas tahan, kurangi urea, atur jarak tanam, rendam benih fungisida, semprot trisiklazol atau isoprotiolan saat awal anakan dan sebelum berbunga."],
+["Hawar Daun Bakteri (Kresek)","Bakteri","Padi","Tepi daun mengering bergelombang kuning lalu abu-abu. Pada bibit daun layu seperti tersiram air panas.","Bakteri Xanthomonas oryzae, menyebar lewat air dan angin saat banjir.","Varietas tahan, tanam jajar legowo, keringkan petakan berkala, kurangi nitrogen, hindari air dari lahan sakit, semprot bakterisida tembaga."],
+["Tungro","Virus","Padi","Daun menguning sampai oranye, tanaman kerdil, anakan sedikit.","Virus yang dibawa wereng hijau.","Tanam serempak, varietas tahan, kendalikan wereng hijau, cabut dan benamkan tanaman terinfeksi."],
+["Embun Tepung","Jamur","Cabai, mentimun, kacang, labu, anggur","Lapisan putih seperti tepung di permukaan daun, daun menguning lalu kering.","Jamur yang suka udara kering tetapi lembap di malam hari.","Buang daun sakit, jaga sirkulasi udara, semprot belerang, fungisida heksakonazol, atau larutan baking soda ringan untuk serangan awal."],
+["Karat Daun","Jamur","Kopi, kedelai, jagung, bunga","Bintik kuning lalu tepung oranye di bawah daun, daun gugur.","Jamur karat yang menyebar lewat spora angin.","Pangkas dan atur naungan, kebun bersih, pupuk berimbang, semprot fungisida tembaga atau triazol."],
+["Antraknosa (Patek)","Jamur","Cabai, mangga, kopi, pepaya","Bercak cokelat cekung pada buah, bagian tengah berwarna hitam dengan lingkaran, buah membusuk dan keriput.","Jamur Colletotrichum, menyebar lewat percikan hujan.","Benih sehat, rotasi, buang buah sakit, tanam di mulsa, semprot mankozeb atau azoksistrobin sejak berbunga."],
+["Layu Fusarium","Jamur","Tomat, pisang, cabai, semangka","Daun menguning dari bawah, layu satu sisi, batang bila disayat berwarna cokelat.","Jamur Fusarium di tanah yang bertahan bertahun-tahun.","Rotasi dengan padi atau jagung, tanah dikapur, varietas tahan, Trichoderma pada lubang tanam, cabut tanaman sakit."],
+["Layu Bakteri","Bakteri","Tomat, cabai, kentang, terong, pisang (Moko)","Tanaman layu mendadak meski tanah basah, batang dipotong dan dicelup air keluar lendir putih.","Bakteri Ralstonia solanacearum di tanah dan air.","Rotasi dengan jagung atau padi, tanah dikapur, varietas tahan atau sambung batang, cabut dan musnahkan tanaman sakit."],
+["Hawar Daun (Busuk Daun)","Jamur air","Kentang, tomat","Bercak basah kehitaman di daun, ada lapisan putih di bawah daun saat lembap, umbi atau buah membusuk.","Phytophthora infestans, ledak saat hujan dan berkabut.","Bibit sehat, jarak lebar, drainase baik, semprot mankozeb atau dimetomorf bergantian sebelum hujan."],
+["Busuk Pangkal Batang (Sclerotium)","Jamur","Cabai, kacang, tomat","Pangkal batang melunak, ada benang putih seperti kapas dan butir kecil seperti biji sawi.","Jamur Sclerotium rolfsii di tanah lembap.","Kebersihan lahan, gunakan kompos matang, Trichoderma, buang tanaman sakit, hindari genangan."],
+["Akar Gada","Jamur lendir","Kubis, sawi, brokoli","Akar membengkak seperti gada, tanaman layu siang hari dan kerdil.","Plasmodiophora brassicae, di tanah masam.","Kapur hingga pH 7, rotasi 3 sampai 4 tahun dengan non-kubis, bibit sehat, drainase baik."],
+["Keriting dan Kuning (Gemini)","Virus","Cabai, tomat","Daun menggulung, keriting dan menguning, tanaman kerdil, bunga rontok.","Virus yang dibawa kutu kebul.","Mulsa perak, kendalikan kutu kebul, tutup persemaian dengan kain kasa, cabut tanaman terinfeksi, tidak ada obat virus."],
+["Bercak Daun Cercospora","Jamur","Kacang tanah, cabai, jagung, bit","Bercak bulat cokelat dengan pinggiran kuning di daun, bercak menyatu, daun gugur.","Jamur Cercospora, lembap dan padat.","Benih sehat, jarak tanam longgar, kebersihan sisa tanaman, semprot klorotalonil atau mankozeb."],
+["Busuk Buah Kakao","Jamur air","Kakao","Bercak cokelat licin pada buah, menyebar lalu menghitam ditutupi serbuk putih.","Phytophthora palmivora, saat musim hujan.","Panen sering, buang buah busuk, pangkas naungan, semprot fungisida tembaga, Trichoderma pada kebun."]];
+
+// Hama: [nama, tipe, tanaman, ciri, sebab/daur, tangani]
+const HAMA=[
+["Wereng Batang Cokelat","Serangga","Padi","Kumpulan serangga kecil cokelat di pangkal batang, tanaman mengering melingkar (hopperburn).","Menghisap cairan batang dan menularkan virus kerdil. Ledak karena tanam tidak serempak dan banyak urea.","Tanam serempak, varietas tahan, jajar legowo, hindari insektisida berlebihan (membunuh musuh alami), pakai buprofezin atau pimetrozin saat melewati ambang."],
+["Penggerek Batang Padi","Serangga","Padi","Daun pucuk mengering (sundep) atau malai putih hampa (beluk).","Ulat dari ngengat menggerek batang.","Tanam serempak, lampu perangkap, tanam jerami dibenamkan, pelepasan Trichogramma, insektisida bila diperlukan."],
+["Walang Sangit","Serangga","Padi","Serangga hijau kecokelatan berbau menyengat, bulir padi hampa atau beras berbintik.","Menghisap bulir susu saat berbunga.","Bersihkan gulma, umpan bangkai atau ikan busuk, semprot insektisida sore saat bulir matang susu."],
+["Ulat Grayak","Serangga","Cabai, bawang, kedelai, jagung","Ulat menggerombol, daun berlubang tanpa tulang, kadang buah dimakan.","Ulat Spodoptera yang aktif malam hari.","Kumpulkan kelompok telur, lampu perangkap, feromon, SlNPV, Bacillus thuringiensis, emamektin benzoat saat serangan berat."],
+["Ulat Krop Kubis","Serangga","Kubis, sawi, brokoli","Daun berlubang, ulat hijau kecil menggerek krop.","Plutella dan Crocidolomia, cepat kebal.","Tumpang sari dengan tomat, Bacillus thuringiensis, tanam perangkap sawi, rotasi bahan aktif."],
+["Kutu Daun (Aphid)","Serangga","Cabai, kacang, jeruk, sayuran","Kutu kecil hijau atau hitam di pucuk dan bawah daun, daun keriting, ada embun madu dan semut.","Menghisap cairan dan menularkan virus.","Semprot air kuat atau sabun insektisida, tanam bunga penarik kumbang kepik, mimba, imidakloprid bila parah."],
+["Kutu Kebul","Serangga","Tomat, cabai, terong","Serangga putih kecil terbang saat daun disentuh, daun kuning dan berjelaga.","Penular virus kuning.","Perangkap kuning, mulsa perak, kain kasa pada persemaian, sabun atau minyak mimba, bergantian insektisida."],
+["Thrips","Serangga","Cabai, bawang, mawar","Garis keperakan di daun, pucuk keriting, bunga rusak.","Serangga kecil sekali penghisap sel.","Perangkap biru atau kuning, mulsa perak, jaga kelembapan, abamektin atau spinetoram."],
+["Lalat Buah","Serangga","Mangga, cabai, jambu, belimbing","Buah berlubang kecil, di dalamnya belatung putih, buah busuk dan rontok.","Lalat bertelur di dalam kulit buah.","Bungkus buah, kumpulkan dan kubur buah jatuh, perangkap metil eugenol, kebun bersih."],
+["Tikus","Mamalia","Padi, jagung, kakao, kelapa","Batang terpotong miring, malai dimakan, lubang di pematang.","Berkembang cepat dekat tempat bersembunyi.","Gropyokan bersama, bubu perangkap tanam (TBS), burung hantu (Tyto alba), bersihkan semak."],
+["Keong Mas","Moluskus","Padi","Bibit padi dimakan hingga hanya sisa tunggul, telur merah muda menempel di batang.","Keong ini aktif di sawah tergenang saat tanam.","Kumpulkan keong dan telur, pasang saringan di saluran air, pakai itik, atur air macet saat bibit muda, moluskisida jika perlu."],
+["Tungau Merah","Arakhnida","Cabai, jeruk, singkong, kopi","Daun keperakan atau bercak kuning, jaring halus di bawah daun.","Berkembang pesat saat panas dan kering.","Semprot air ke bawah daun, jaga kelembapan, akarisida abamektin atau propargit."],
+["Uret (Kumbang Tanah)","Serangga","Tebu, kacang tanah, kelapa sawit, bit","Tanaman mendadak layu, akar putus, ada larva putih bentuk C di tanah.","Larva kumbang memakan akar.","Olah tanah dalam saat kemarau, jebakan lampu untuk kumbang dewasa, Metarhizium, insektisida butir."],
+["Penggerek Buah Kakao","Serangga","Kakao","Biji lengket, buah matang tidak merata, ada lubang keluar ulat.","Ngengat bertelur di buah.","Panen sering, sarungisasi buah muda, pangkas, pupuk berimbang, bunuh ulat di kulit buah."],
+["Nematoda Puru Akar","Cacing mikro","Tomat, cabai, wortel","Akar berbintil, tanaman kerdil dan layu meski cukup air.","Cacing mikro di tanah.","Rotasi dengan padi atau tagetes, kompos, solarisasi tanah, Paecilomyces atau Trichoderma."]];
+
+const DATA={hara:{n:"Zat Hara",d:HARA,i:"Tanaman butuh 17 unsur untuk hidup. Tiga yang paling banyak (N, P, K) disebut makro primer. Kurang atau lebih sedikit saja bisa mengubah hasil panen. Ketuk kartu untuk membaca lengkap.",k:["Fungsi","Gejala bila kekurangan","Bila berlebihan","Sumber pupuk"]},
+sida:{n:"Pestisida (Sida)",d:SIDA,i:"Akhiran sida berarti pembunuh: fungisida untuk jamur, insektisida untuk serangga, dan seterusnya. Pilih sida sesuai sasaran, karena sida yang salah tidak bekerja dan merusak lingkungan.",k:["Fungsi","Contoh bahan","Cara pakai","Catatan"]},
+sakit:{n:"Penyakit Tanaman",d:SAKIT,i:"Penyakit tanaman ditimbulkan oleh jamur, bakteri, dan virus. Mengenali gejala sejak dini membuat penanganan jauh lebih murah dan efektif.",k:["Ciri-ciri","Penyebab","Cara menangani"],o:1},
+hama:{n:"Hama",d:HAMA,i:"Hama adalah binatang pengganggu tanaman. Prinsipnya pengendalian hama terpadu: cegah dulu dengan budidaya, lalu musuh alami, dan sida kimia hanya jalan terakhir.",k:["Ciri-ciri","Penyebab dan kebiasaan","Cara menangani"],o:1}};
+// urutan field: hara/sida [nama,sub,tipe,f1,f2,f3,f4]; sakit/hama [nama,tipe,tanaman,f1,f2,f3]
+const P={
+sprout:'<path d="M24 42V24M24 24c0-9-6-13-15-13 0 9 6 13 15 13zM24 30c0-6 5-10 14-10 0 7-6 10-14 10z"/>',
+grass:'<path d="M8 42h32M12 42l4-20 4 20M22 42l4-28 4 28M32 42l3-14 3 14"/>',
+leaf:'<path d="M8 40C8 22 18 8 40 8c0 20-12 32-32 32zM8 40L28 20"/>',
+sick:'<path d="M8 40C8 22 18 8 40 8c0 20-12 32-32 32z"/><circle cx="24" cy="20" r="2.5"/><circle cx="19" cy="30" r="2"/><circle cx="31" cy="27" r="2"/>',
+drop:'<path d="M24 6C16 18 11 24 11 31a13 13 0 0026 0c0-7-5-13-13-25z"/><path d="M18 32a6 6 0 006 6"/>',
+bug:'<path d="M24 14c-5 0-8 4-8 11s3 13 8 13 8-6 8-13-3-11-8-11zM24 14v24M16 22l-9-4M16 29H5M17 35l-8 5M32 22l9-4M32 29h11M31 35l8 5M20 14l-3-7M28 14l3-7"/>',
+worm:'<circle cx="10" cy="30" r="4"/><circle cx="18" cy="26" r="4"/><circle cx="26" cy="26" r="4"/><circle cx="34" cy="30" r="4"/><circle cx="41" cy="24" r="3"/><path d="M10 34v5M18 30v9M26 30v9M34 34v5"/>',
+nema:'<path d="M6 30c6-12 10 12 16 0s10 12 16 0 4-6 4-6"/>',
+fungus:'<path d="M6 27a18 15 0 0136 0zM19 27v10a5 5 0 0010 0V27M14 21h.1M24 16h.1M32 21h.1"/>',
+bact:'<rect x="10" y="17" width="28" height="14" rx="7" transform="rotate(-30 24 24)"/><path d="M36 12c4-4 8-2 8 2M12 36c-4 4-8 2-8-2M24 24h.1"/>',
+virus:'<circle cx="24" cy="24" r="9"/><path d="M24 15V7M24 41v-8M15 24H7M41 24h-8M18 18l-6-6M36 36l-6-6M30 18l6-6M12 36l6-6"/><circle cx="24" cy="6" r="2"/><circle cx="24" cy="42" r="2"/><circle cx="6" cy="24" r="2"/><circle cx="42" cy="24" r="2"/>',
+rat:'<path d="M6 34c0-9 8-15 18-15 7 0 12 4 12 9s-4 6-8 6H12zM36 20a4 4 0 100-8 4 4 0 000 8zM6 34c-3 2-4 6 0 8M30 25h.1"/>',
+snail:'<circle cx="22" cy="25" r="11"/><path d="M22 25a4 4 0 114 4M6 38h36M34 38c0-8-1-13-1-18M33 20l-2-6M36 20l3-6"/>',
+mite:'<circle cx="24" cy="24" r="8"/><path d="M17 19L7 12M16 24H5M17 29l-10 7M31 19l10-7M32 24h11M31 29l10 7M21 16l-2-8M27 16l2-8"/>',
+soil:'<path d="M5 20q9-6 19 0t19 0M5 29q9-6 19 0t19 0M5 38q9-6 19 0t19 0M24 12V6M24 6c-3 0-5 2-5 4 3 0 5-2 5-4zM24 8c3 0 5 2 5 4-3 0-5-2-5-4z"/>',
+flask:'<path d="M18 6h12M20 6v12L9 38a3 3 0 003 5h24a3 3 0 003-5L28 18V6M14 32h20"/>'};
+const S=i=>`<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${i}</svg>`;
+function icon(r){const n=r[0].toLowerCase();let k;
+if(tab==="hara"){const m=r[0].match(/\((\w+)\)/);return m?S(`<circle cx="24" cy="24" r="19"/><text x="24" y="31" text-anchor="middle" font-size="20" font-family="Cormorant Garamond,Georgia,serif" fill="currentColor" stroke="none">${m[1]}</text>`):S(P.soil)}
+if(tab==="sida")k=n.includes("fungi")?"fungus":n.includes("insekti")?"bug":n.includes("herbi")?"grass":n.includes("bakteri")?"bact":n.includes("akari")?"mite":n.includes("nemati")?"nema":n.includes("moluski")?"snail":n.includes("roden")?"rat":n.includes("pengatur")?"sprout":n.includes("nabati")?"leaf":n.includes("hayati")?"bact":"flask";
+else if(tab==="sakit")k=r[1].startsWith("Jamur")?"fungus":r[1]==="Bakteri"?"bact":r[1]==="Virus"?"virus":"sick";
+else k=n.includes("tikus")?"rat":n.includes("keong")?"snail":n.includes("tungau")?"mite":n.includes("nematoda")?"nema":/ulat|uret|penggerek/.test(n)?"worm":"bug";
+return S(P[k])}
+let tab="hara",chip="Semua";
+const $=id=>document.getElementById(id),esc=s=>String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+function render(){
+ const D=DATA[tab],q=$("q").value.toLowerCase().trim();
+ $("intro").textContent=D.i;
+ const type=r=>D.o?r[1]:r[2];
+ const types=["Semua",...new Set(D.d.map(type))];
+ if(!types.includes(chip))chip="Semua";
+ $("chips").innerHTML=types.map(t=>`<button class="${t===chip?"on":""}" data-c="${esc(t)}">${esc(t)}</button>`).join("");
+ const rows=D.d.filter(r=>(chip==="Semua"||type(r)===chip)&&(!q||r.join(" ").toLowerCase().includes(q)));
+ $("list").innerHTML=rows.length?rows.map(r=>{
+  const sub=D.o?r[2]:r[1],body=D.o?r.slice(3):r.slice(3);
+  return `<details><summary><span class="ic">${icon(r)}</span><span class="tt"><b>${esc(r[0])}</b><small>${esc(sub)}</small></span><i>${esc(type(r))}</i></summary><div class="d">${body.map((t,i)=>`<div><h4>${D.k[i]}</h4><p>${esc(t)}</p></div>`).join("")}</div></details>`}).join(""):`<p class="none">Tidak ditemukan. Coba kata lain, misalnya nama tanaman atau gejala.</p>`;
+ $("warn").innerHTML=tab==="sida"?"<b>Keselamatan.</b> Pakai sarung tangan, masker, dan baju lengan panjang. Jangan makan atau merokok saat menyemprot. Jangan menyemprot melawan angin. Buang kemasan dengan aman dan jauhkan dari anak. Hormati masa tunggu panen sesuai label.":tab==="hara"?"<b>Tips.</b> Cara termudah mengetahui kebutuhan tanah adalah uji tanah di laboratorium atau perangkat uji pH. Pupuk sebaiknya diberikan sesuai hasil uji, bukan sekadar kira-kira.":"<b>Ingat.</b> Cabut dan musnahkan tanaman terinfeksi sejak awal, rotasi tanaman, dan jaga kebersihan lahan. Konsultasikan dengan penyuluh pertanian untuk diagnosis pasti.";
+}
+$("tabs").innerHTML=Object.entries(DATA).map(([k,v])=>`<button data-t="${k}" class="${k===tab?"on":""}">${v.n}</button>`).join("");
+$("tabs").onclick=e=>{const t=e.target.dataset.t;if(!t)return;tab=t;chip="Semua";$("q").value="";[...$("tabs").children].forEach(b=>b.classList.toggle("on",b.dataset.t===t));render()};
+$("chips").onclick=e=>{if(e.target.dataset.c){chip=e.target.dataset.c;render()}};
+$("q").oninput=render;
+$("hero").innerHTML=["sprout","fungus","bug","drop","bact","soil"].map(k=>S(P[k])).join("");
+render();
+</script>
+</body>
+</html>
